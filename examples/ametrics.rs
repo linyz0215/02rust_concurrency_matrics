@@ -1,11 +1,20 @@
 use anyhow::Result;
-use concurrency::Metrics;
+use concurrency::AmapMetrics;
 use std::{thread, time::Duration};
 use rand::Rng;
 const N: usize = 2;
 const M: usize = 4;
 fn main() -> Result<()> {
-    let metrics = Metrics::new();
+    let metrics = AmapMetrics::new(
+        &[
+            "call.thread.worker.0",
+            "call.thread.worker.1",
+            "req.page.1",
+            "req.page.2",
+            "req.page.3",
+            "req.page.4",
+        ]
+    );
 
     for idx in 0..N {
         task_worker(idx, metrics.clone());//Metrics {data: Arc::clone(&metrics))};
@@ -21,7 +30,7 @@ fn main() -> Result<()> {
     }
 }
 
-fn task_worker(idx: usize, metrics: Metrics) {
+fn task_worker(idx: usize, metrics: AmapMetrics) {
     thread::spawn(move || loop{
         let mut rng = rand::thread_rng();
         thread::sleep(std::time::Duration::from_secs(rng.gen_range(1..5)));
@@ -29,7 +38,7 @@ fn task_worker(idx: usize, metrics: Metrics) {
     }); 
 }
 
-fn request_worker(metrics: Metrics) -> Result<()> {
+fn request_worker(metrics: AmapMetrics) -> Result<()> {
     thread::spawn(move || {
         loop {
             let mut rng = rand::thread_rng();
