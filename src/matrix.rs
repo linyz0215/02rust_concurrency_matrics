@@ -1,8 +1,8 @@
-use anyhow::{anyhow,Result};
-use std::fmt::{self, Debug, Display};
+use anyhow::{Result};
+use std::fmt::{self, Display};
 use std::ops::{AddAssign, Mul};
 use std::sync::mpsc;   
-use std::thread;
+use std::{thread};
 use crate::vector::{Vector,dot_prosuct};
 const NUM_THREADS: usize = 4;
 pub struct Matrix<T> 
@@ -38,7 +38,7 @@ where T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> + AddAssign + Cop
     let senders = (0..NUM_THREADS).map(|_| {
         let (tx, rx) = mpsc::channel::<Msg<T>>();//创建通道
         thread::spawn(move || {//创建线程
-            for msg in rx {
+            for msg in rx {     
                 let value = dot_prosuct(msg.input.row, msg.input.col)?;
                 if let Err(e) = msg.sender.send(MsgOutput { idx: msg.input.idx, value }) {
                     eprintln!("Failed to send result: {:?}", e);
@@ -81,8 +81,7 @@ where T: std::ops::Mul<Output = T> + std::ops::Add<Output = T> + AddAssign + Cop
 impl<T> Matrix<T> {
     pub fn new(data: impl Into<Vec<T>>, rows: usize, cols: usize) -> Self {
         let data1 = data.into();
-        //data.into() 是调用 std::convert::Into trait 的方法，把 data 转换（并移动）成 Vec<T>。
-        //impl Into<Vec<T>> 表示函数接受任何能被转换为 Vec<T> 的类型（例如 Vec<T> 本身，或者实现了 From<Other> for Vec<T> 的类型；From 的实现会自动提供对应的 Into）。注意 .into() 会消费所有权——data 会被 move 进那个 Vec。
+        //data.into() 
         Matrix { data: data1, rows, cols }
     }
 }
